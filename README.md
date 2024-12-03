@@ -15,6 +15,7 @@ Este programa genera estrategias para planificar ataques en el juego Risk. Calcu
 
 
 ***EJEMPLO DE ENTRADA***
+
 Introduce el máximo de puntos disponibles para tropas: 100
 
 Introduce el número de territorios enemigos: 3
@@ -51,6 +52,7 @@ Costo de Artillería: 15
 
 
 ***EJEMPLO DE SALIDA***
+
 Combinaciones posibles de tropas (10 encontradas):
 
 {'Infantería': 5, 'Caballería': 2, 'Artillería': 1}
