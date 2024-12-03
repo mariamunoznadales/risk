@@ -1,6 +1,6 @@
 from itertools import permutations
 
-# Generar combinaciones de tropas respetando los recursos disponibles
+# Generar combinaciones de tropas
 def generar_combinaciones(max_puntos, tropas):
     combinaciones = []
     for inf in range(1, max_puntos + 1):  # Al menos 1 infantería
@@ -13,106 +13,99 @@ def generar_combinaciones(max_puntos, tropas):
                 )
                 if costo_total <= max_puntos:
                     combinaciones.append({"Infantería": inf, "Caballería": cab, "Artillería": art})
-    print(f"Combinaciones generadas: {combinaciones}")  # Depuración
     return combinaciones
 
+# Generar permutaciones priorizando territorios más débiles
+def generar_permutaciones_prioritarias(defensas):
+    defensas_ordenadas = sorted(enumerate(defensas), key=lambda x: x[1])  # Ordenar por defensa
+    indices_ordenados = [indice for indice, _ in defensas_ordenadas]
+    return list(permutations(indices_ordenados))
 
-# Generar permutaciones del orden de ataque, con opción de atacar primero los más débiles
-def generar_permutaciones(cantidad_territorios, defensas, restricciones=None):
-    permutaciones = list(permutations(range(cantidad_territorios)))
-    if restricciones == "territorios_mas_debiles":
-        permutaciones.sort(key=lambda perm: sum([defensas[territorio] for territorio in perm]))
-    return permutaciones
-
-# Evaluar combinación según restricciones de tropas y territorios
-def evaluar_combinacion(combinacion, permutacion, defensas, tropas):
-    fuerza_total = sum(combinacion[tipo] * tropas[tipo]["fuerza"] for tipo in tropas)
-    print(f"Fuerza total de la combinación {combinacion}: {fuerza_total}")  # Depuración
-    conquistas = 0
-    for idx in permutacion:
-        print(f"Evaluando contra la defensa del territorio {idx + 1}: {defensas[idx]}")  # Depuración
-        if fuerza_total >= defensas[idx]:
-            fuerza_total -= defensas[idx]
-            conquistas += 1
-        else:
-            print(f"No se puede conquistar el territorio {idx + 1}")  # Depuración
-            break
-    return conquistas
-
-
-# Optimizar estrategias, eligiendo la combinación de tropas que maximiza las conquistas
-
-def optimizar_estrategia(max_puntos, defensas, tropas):
-    combinaciones = generar_combinaciones(max_puntos, tropas)
-    print(f"\nCombinaciones de tropas generadas: {combinaciones}")  # depuración
-    permutaciones = generar_permutaciones(len(defensas), defensas, restricciones="territorios_mas_debiles")
-    print(f"Permutaciones generadas: {permutaciones}")  # depuración
-    mejor_estrategia = {"conquistas": 0, "combinacion": {}, "permutacion": []}
-
-    for combinacion in combinaciones:
-        for permutacion in permutaciones:
-            conquistas = evaluar_combinacion(combinacion, permutacion, defensas, tropas)
-            print(f"Evaluando combinacion: {combinacion} con permutacion: {permutacion} -> conquistas: {conquistas}")  # Depuración
-            if conquistas > mejor_estrategia["conquistas"]:
-                mejor_estrategia = {"conquistas": conquistas, "combinacion": combinacion, "permutacion": permutacion}
-
-    return mejor_estrategia
-
-
-# Representar el tablero con los territorios y su defensa
-def representar_tablero(defensas):
-    tablero = [{"territorio": i + 1, "defensa": defensa} for i, defensa in enumerate(defensas)]
+# Representar el tablero
+def representar_tablero(defensas, tipos_territorio):
+    tablero = [{"territorio": i + 1, "defensa": defensa, "tipo": tipo}
+               for i, (defensa, tipo) in enumerate(zip(defensas, tipos_territorio))]
     return tablero
 
-# Entrada dinámica de datos
+# Calcular conquistas con una combinación y un orden específico
+def calcular_conquistas(tablero, combinacion, tropas):
+    conquistas = 0
+    tropas_restantes = combinacion.copy()
+    for territorio in tablero:
+        tipo = territorio["tipo"]
+        defensa = territorio["defensa"]
+        
+        if tipo == "plano":
+            fuerza = tropas_restantes["Caballería"] * tropas["Caballería"]["fuerza"]
+        elif tipo == "montañoso":
+            fuerza = tropas_restantes["Artillería"] * tropas["Artillería"]["fuerza"]
+        else:
+            fuerza = tropas_restantes["Infantería"] * tropas["Infantería"]["fuerza"]
+
+        if fuerza >= defensa:
+            conquistas += 1
+            tropas_restantes = {t: max(0, tropas_restantes[t] - defensa // tropas[t]["fuerza"])
+                                for t in tropas_restantes}
+    return conquistas
+
+# Optimizar conquistas
+def optimizar_conquistas(tablero, combinaciones, tropas):
+    mejor_combinacion = None
+    mejor_orden = None
+    max_conquistas = 0
+    
+    for combinacion in combinaciones:
+        for permutacion in generar_permutaciones_prioritarias([t["defensa"] for t in tablero]):
+            tablero_ordenado = [tablero[i] for i in permutacion]
+            conquistas = calcular_conquistas(tablero_ordenado, combinacion, tropas)
+            if conquistas > max_conquistas:
+                max_conquistas = conquistas
+                mejor_combinacion = combinacion
+                mejor_orden = permutacion
+    
+    return mejor_combinacion, mejor_orden, max_conquistas
+
+# Entrada de datos dinámica
 def entrada_datos():
     max_puntos = int(input("Introduce el máximo de puntos disponibles para tropas: "))
     cantidad_territorios = int(input("Introduce el número de territorios enemigos: "))
     defensas = []
+    tipos_territorio = []
     for i in range(cantidad_territorios):
         defensa = int(input(f"Introduce la fuerza de defensa del Territorio {i + 1}: "))
+        tipo = input(f"Introduce el tipo del Territorio {i + 1} (plano/montañoso/otro): ")
         defensas.append(defensa)
-    
-    tropas = {}
-    for tipo in ["Infantería", "Caballería", "Artillería"]:
-        fuerza = int(input(f"Fuerza de {tipo}: "))
-        costo = int(input(f"Costo de {tipo}: "))
-        while costo <= 0:
-            print("El costo debe ser mayor que 0.")
-            costo = int(input(f"Costo de {tipo}: "))
-        tropas[tipo] = {"fuerza": fuerza, "costo": costo}
-    
-    return max_puntos, defensas, tropas
+        tipos_territorio.append(tipo)
+    tropas = {
+        "Infantería": {"fuerza": int(input("Fuerza de Infantería: ")), "costo": int(input("Costo de Infantería: "))},
+        "Caballería": {"fuerza": int(input("Fuerza de Caballería: ")), "costo": int(input("Costo de Caballería: "))},
+        "Artillería": {"fuerza": int(input("Fuerza de Artillería: ")), "costo": int(input("Costo de Artillería: "))},
+    }
+    return max_puntos, defensas, tipos_territorio, tropas
 
-# Ejecutar el programa
+# Ejecutar programa
 def main():
-    print("Planificador de Ataque para Risk")
-    max_puntos, defensas, tropas = entrada_datos()
+    print("Bienvenido al planificador de ataques de Risk.")
+    max_puntos, defensas, tipos_territorio, tropas = entrada_datos()
     
-    # Representar el tablero
-    tablero = representar_tablero(defensas)
-    print("\nTablero representado:")
-    for territorio in tablero:
-        print(territorio)
-
     # Generar combinaciones de tropas
     combinaciones = generar_combinaciones(max_puntos, tropas)
     print(f"\nCombinaciones posibles de tropas ({len(combinaciones)} encontradas):")
     for combinacion in combinaciones:
         print(combinacion)
 
-    # Generar permutaciones del orden de ataque
-    permutaciones = generar_permutaciones(len(defensas), defensas, restricciones="territorios_mas_debiles")
-    print(f"\nPermutaciones posibles del orden de ataque ({len(permutaciones)} encontradas):")
-    for perm in permutaciones:
-        print(perm)
+    # Representar el tablero
+    tablero = representar_tablero(defensas, tipos_territorio)
+    print("\nTablero representado:")
+    for territorio in tablero:
+        print(territorio)
 
-    # Optimizar estrategia
-    mejor_estrategia = optimizar_estrategia(max_puntos, defensas, tropas)
-    print("\nMejor estrategia optimizada:")
-    print(f"- Conquistas logradas: {mejor_estrategia['conquistas']}")
-    print(f"- Combinación de tropas: {mejor_estrategia['combinacion']}")
-    print(f"- Orden de ataque: {mejor_estrategia['permutacion']}")
+    # Optimizar conquistas
+    mejor_combinacion, mejor_orden, max_conquistas = optimizar_conquistas(tablero, combinaciones, tropas)
+    print("\nMejor estrategia encontrada:")
+    print(f"Combinación de tropas: {mejor_combinacion}")
+    print(f"Orden de ataque: {mejor_orden}")
+    print(f"Máximo de conquistas: {max_conquistas}")
 
 if __name__ == "__main__":
     main()
