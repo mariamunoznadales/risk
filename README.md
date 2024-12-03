@@ -45,6 +45,7 @@ Fuerza de Artillería: 30
 Costo de Artillería: 15
 
 
+
  **Salida:**
    - Combinaciones posibles de tropas según el presupuesto.
    - Permutaciones posibles del orden de ataque a los territorios.
