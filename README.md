@@ -13,7 +13,8 @@ Este programa genera estrategias para planificar ataques en el juego Risk. Calcu
      - Caballería
      - Artillería
 
-**EJEMPLO DE ENTRADA*
+
+***EJEMPLO DE ENTRADA***
 Introduce el máximo de puntos disponibles para tropas: 100
 
 Introduce el número de territorios enemigos: 3
@@ -48,7 +49,8 @@ Costo de Artillería: 15
    - Permutaciones posibles del orden de ataque a los territorios.
    - Representación del tablero con información sobre cada territorio.
 
-**EJEMPLO DE SALIDA* 
+
+***EJEMPLO DE SALIDA***
 Combinaciones posibles de tropas (10 encontradas):
 
 {'Infantería': 5, 'Caballería': 2, 'Artillería': 1}
