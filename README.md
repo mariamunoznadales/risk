@@ -13,18 +13,39 @@ Este programa genera estrategias para planificar ataques en el juego Risk. Calcu
      - Caballería
      - Artillería
 
+**EJEMPLO DE ENTRADA*
+Introduce el máximo de puntos disponibles para tropas: 100
+Introduce el número de territorios enemigos: 3
+Introduce la fuerza de defensa del Territorio 1: 50
+Introduce el tipo del Territorio 1 (plano/montañoso/otro): plano
+Introduce la fuerza de defensa del Territorio 2: 30
+Introduce el tipo del Territorio 2 (plano/montañoso/otro): montañoso
+Introduce la fuerza de defensa del Territorio 3: 40
+Introduce el tipo del Territorio 3 (plano/montañoso/otro): otro
+Fuerza de Infantería: 10
+Costo de Infantería: 5
+Fuerza de Caballería: 20
+Costo de Caballería: 10
+Fuerza de Artillería: 30
+Costo de Artillería: 15
+
  **Salida:**
    - Combinaciones posibles de tropas según el presupuesto.
    - Permutaciones posibles del orden de ataque a los territorios.
    - Representación del tablero con información sobre cada territorio.
 
+**EJEMPLO DE SALIDA* 
+Combinaciones posibles de tropas (10 encontradas):
+{'Infantería': 5, 'Caballería': 2, 'Artillería': 1}
+...
 
-## Bonus
- **Aumentar complejidad:**
-   - Restricción: El programa puede priorizar atacar territorios más débiles en las permutaciones del orden de ataque.
+Tablero representado:
+{'territorio': 1, 'defensa': 50, 'tipo': 'plano'}
+{'territorio': 2, 'defensa': 30, 'tipo': 'montañoso'}
+{'territorio': 3, 'defensa': 40, 'tipo': 'otro'}
 
- **Estrategias específicas:**
-   - El programa permite configurar las tropas para diferentes tipos de territorios (por ejemplo, usar más caballería en terrenos planos).
- 
- **Optimización:**
-   - Calcula la combinación de tropas y el orden de ataque que maximiza las conquistas con los recursos disponibles.
+Mejor estrategia encontrada:
+Combinación de tropas: {'Infantería': 6, 'Caballería': 2, 'Artillería': 1}
+Orden de ataque: (2, 3, 1)
+Máximo de conquistas: 3
+
